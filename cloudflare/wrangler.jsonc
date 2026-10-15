@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chat-poc-development",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-12",
+  "exports": { "UserRealtime": { "type": "durable-object", "storage": "sqlite" } },
+  "observability": { "enabled": false },
+  "env": {
+    "development": {
+      "name": "chat-poc-development",
+      "vars": { "APP_ENV": "development", "DATASET_ID": "90000000-0000-4000-8000-000000000001" },
+      "durable_objects": { "bindings": [{ "name": "USER_REALTIME", "class_name": "UserRealtime" }] }
+    }
+  }
+}

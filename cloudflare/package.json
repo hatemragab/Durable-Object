@@ -1,0 +1,27 @@
+{
+  "name": "@chat-poc/cloudflare",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env development",
+    "dev:local": "wrangler dev --env development --local --ip 127.0.0.1 --port 8787",
+    "typecheck": "npm run types && tsc --noEmit",
+    "test": "vitest run",
+    "format": "prettier --write 'src/**/*.ts' 'test/**/*.ts' vitest.config.ts",
+    "format:check": "prettier --check 'src/**/*.ts' 'test/**/*.ts' vitest.config.ts",
+    "build": "wrangler deploy --env development --dry-run --outdir dist",
+    "types": "wrangler types --env development"
+  },
+  "dependencies": {
+    "@chat-poc/contracts": "file:../shared",
+    "jose": "6.2.12"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.4.2",
+    "prettier": "3.6.2",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11",
+    "wrangler": "4.151.0"
+  }
+}

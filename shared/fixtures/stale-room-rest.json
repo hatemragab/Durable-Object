@@ -1,0 +1,27 @@
+{
+  "datasetId": "90000000-0000-4000-8000-000000000001",
+  "room": {
+    "id": "20000000-0000-4000-8000-000000000001",
+    "type": "direct",
+    "title": null,
+    "memberIds": [
+      "1",
+      "2"
+    ],
+    "createdBy": "1",
+    "createdAt": "2026-10-15T00:00:00.000Z",
+    "updatedAt": "2026-10-15T00:00:00.000Z",
+    "version": 2,
+    "lastMessageSeq": 1,
+    "lastMessage": {
+      "messageId": "30000000-0000-4000-8000-000000000001",
+      "senderId": "1",
+      "text": "Hello User 2",
+      "roomSeq": 1,
+      "createdAt": "2026-10-15T00:00:00.000Z"
+    },
+    "revision": 2,
+    "unreadCount": 1,
+    "lastReadSeq": 0
+  }
+}

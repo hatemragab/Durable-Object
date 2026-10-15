@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SQL read budgets > measures operations with 1 retained rooms 1`] = `
+{
+  "append": 11,
+  "idleAlarm": 7,
+  "inspect": 5,
+  "presence": 4,
+  "replayFirstPage": 15,
+}
+`;
+
+exports[`SQL read budgets > measures operations with 30 retained rooms 1`] = `
+{
+  "append": 11,
+  "idleAlarm": 7,
+  "inspect": 5,
+  "presence": 4,
+  "replayFirstPage": 44,
+}
+`;
+
+exports[`SQL read budgets > measures operations with 100 retained rooms 1`] = `
+{
+  "append": 11,
+  "idleAlarm": 7,
+  "inspect": 5,
+  "presence": 4,
+  "replayFirstPage": 65,
+}
+`;

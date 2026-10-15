@@ -1,0 +1,62 @@
+{
+  "whitespaceCodePoints": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    32,
+    133,
+    160,
+    5760,
+    8192,
+    8193,
+    8194,
+    8195,
+    8196,
+    8197,
+    8198,
+    8199,
+    8200,
+    8201,
+    8202,
+    8232,
+    8233,
+    8239,
+    8287,
+    12288,
+    65279
+  ],
+  "blankTexts": [
+    "",
+    "",
+    "﻿",
+    "\t\n\u000b\f\r                  　﻿"
+  ],
+  "preservedTexts": [
+    "مرحبا 😀﻿",
+    " \tmessage\n﻿ ",
+    "᠎",
+    "​",
+    "⁠"
+  ],
+  "titleCases": [
+    {
+      "input": "﻿ \tGroupInside ﻿",
+      "normalized": "GroupInside"
+    },
+    {
+      "input": "﻿Group﻿",
+      "normalized": "Group"
+    },
+    {
+      "input": "\t\n\u000b\f\r                  　﻿Group\t\n\u000b\f\r                  　﻿",
+      "normalized": "Group"
+    }
+  ],
+  "nonWhitespaceCodePoints": [
+    6158,
+    8203,
+    8288
+  ]
+}

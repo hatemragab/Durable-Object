@@ -1,0 +1,25 @@
+{
+  "hello": {
+    "v": 2,
+    "type": "hello",
+    "datasetId": "90000000-0000-4000-8000-000000000001",
+    "userId": "2",
+    "deviceId": "60000000-0000-4000-8000-000000000001",
+    "connectionId": "70000000-0000-4000-8000-000000000001",
+    "headSeq": 6,
+    "retainedFromSeq": 1,
+    "heartbeatIntervalMs": 20000,
+    "heartbeatTimeoutMs": 10000,
+    "sessionExpiresAt": "2026-10-16T00:00:00.000Z",
+    "epoch": "91000000-0000-4000-8000-000000000001",
+    "replayFloor": 0,
+    "retentionMs": 172800000
+  },
+  "resume": {
+    "v": 2,
+    "type": "resume",
+    "afterSeq": 4,
+    "epoch": "91000000-0000-4000-8000-000000000001",
+    "syncedAt": "2026-10-15T00:00:00.000Z"
+  }
+}

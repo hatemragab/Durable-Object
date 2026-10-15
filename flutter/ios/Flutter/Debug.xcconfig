@@ -1,0 +1,5 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+// The trusted-LAN demo API only. Keep this in sync with config.local.json.
+CHAT_POC_LAN_HOST = 192.168.1.131

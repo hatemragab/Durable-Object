@@ -1,0 +1,3157 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Durable chat development POC",
+    "version": "2.0.0",
+    "description": "Development only. Protocol v2 stores no MongoDB event journal: room_members is current per-user state, Cloudflare retains compacted room-only changes for 48 hours."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3000"
+    }
+  ],
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "get Health",
+        "description": "",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "service": {
+                      "type": "string"
+                    },
+                    "ready": {
+                      "type": "boolean"
+                    },
+                    "development": {
+                      "const": true
+                    },
+                    "protocolVersion": {
+                      "const": 2
+                    }
+                  },
+                  "required": [
+                    "service",
+                    "ready",
+                    "development",
+                    "protocolVersion"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dev/users": {
+      "get": {
+        "operationId": "listDevelopmentUsers",
+        "summary": "list Development Users",
+        "description": "",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserSummary"
+                      }
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "users"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dev/session": {
+      "post": {
+        "operationId": "createDevelopmentSession",
+        "summary": "create Development Session",
+        "description": "Development-only account selector; intentionally not real end-user authentication.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "2",
+                      "3"
+                    ]
+                  },
+                  "deviceId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "userId",
+                  "deviceId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/UserSummary"
+                    },
+                    "deviceId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "sessionToken": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "realtimeBaseUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "protocolVersion": {
+                      "const": 2
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "user",
+                    "deviceId",
+                    "sessionToken",
+                    "expiresAt",
+                    "realtimeBaseUrl",
+                    "protocolVersion"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/realtime/ticket": {
+      "post": {
+        "operationId": "createRealtimeTicket",
+        "summary": "create Realtime Ticket",
+        "description": "",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "ticket": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "sessionExpiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "url",
+                    "ticket",
+                    "expiresAt",
+                    "sessionExpiresAt"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms": {
+      "get": {
+        "operationId": "listRooms",
+        "summary": "list Rooms",
+        "description": "Authoritative per-user room snapshots ordered updatedAt DESC, id ASC. Defaults to 20 rooms. Cursor pagination; first-page sync fence is captured from Cloudflare BEFORE the MongoDB snapshot. Adopt this fence only when replacing the local inbox; merge later pages by room revision. Cache-Control: no-store.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomsPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/rooms/direct": {
+      "post": {
+        "operationId": "createDirectRoom",
+        "summary": "create Direct Room",
+        "description": "Unique unordered pair; 201 new or 200 existing.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "peerUserId": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "2",
+                      "3"
+                    ]
+                  }
+                },
+                "required": [
+                  "peerUserId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    },
+                    "created": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "room",
+                    "created"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created and committed in MongoDB; this does not claim peer delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    },
+                    "created": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "room",
+                    "created"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/group": {
+      "post": {
+        "operationId": "createGroupRoom",
+        "summary": "create Group Room",
+        "description": "The creator is added by server; reuse clientRequestId on ambiguous retry.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]",
+                    "description": "Trimmed once before validation; the normalized title is at most 80 Unicode scalar values. Whitespace is U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000–U+200A, U+2028, U+2029, U+202F, U+205F, U+3000 and U+FEFF."
+                  },
+                  "memberUserIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "1",
+                        "2",
+                        "3"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 2,
+                    "uniqueItems": true
+                  },
+                  "clientRequestId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "title",
+                  "memberUserIds",
+                  "clientRequestId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    },
+                    "created": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "room",
+                    "created"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created and committed in MongoDB; this does not claim peer delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    },
+                    "created": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "room",
+                    "created"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/{roomId}": {
+      "get": {
+        "operationId": "getRoom",
+        "summary": "get Room",
+        "description": "",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "room"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/{roomId}/messages": {
+      "get": {
+        "operationId": "listRoomMessages",
+        "summary": "list Room Messages",
+        "description": "Latest 30 canonical messages, or an older sequence page, returned chronologically from one MongoDB snapshot. window is an authoritative inclusive sequence range: replace absent cached canonical rows ONLY in that range; preserve pending, older and newer rows. No inbox cursor advancement. Cache-Control: no-store.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "beforeRoomSeq",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Message"
+                      }
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "nextBeforeRoomSeq": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1
+                    },
+                    "window": {
+                      "type": "object",
+                      "properties": {
+                        "fromRoomSeq": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "throughRoomSeq": {
+                          "type": "integer",
+                          "format": "int64",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "fromRoomSeq",
+                        "throughRoomSeq"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "messages",
+                    "hasMore",
+                    "nextBeforeRoomSeq",
+                    "window"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMessage",
+        "summary": "create Message",
+        "description": "Reuse sender/clientMessageId with exact room/text returns original immutable message. Changed fingerprint is 409. The complete NestJS JSON request body is limited to 32,768 UTF-8 bytes, independently of the decoded text limits. Escaped Unicode JSON is accepted within that transport limit; excess padding is rejected with 413 before mutation.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clientMessageId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000,
+                    "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]",
+                    "description": "Nonblank; at most 2000 Unicode scalar values and 8192 decoded UTF-8 bytes; content preserved exactly. Whitespace is U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000–U+200A, U+2028, U+2029, U+202F, U+205F, U+3000 and U+FEFF."
+                  }
+                },
+                "required": [
+                  "clientMessageId",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "message",
+                    "room",
+                    "duplicate"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created and committed in MongoDB; this does not claim peer delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "message",
+                    "room",
+                    "duplicate"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "JSON request body exceeds 32768 UTF-8 bytes; VALIDATION_ERROR, no mutation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/presence": {
+      "get": {
+        "operationId": "queryPresence",
+        "summary": "query Presence",
+        "description": "",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userIds",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[123](,[123]){0,2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Presence"
+                      }
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dev/diagnostics": {
+      "get": {
+        "operationId": "getDiagnostics",
+        "summary": "get Diagnostics",
+        "description": "",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "userId": {
+                      "enum": [
+                        "1",
+                        "2",
+                        "3"
+                      ]
+                    },
+                    "deviceId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "workerHead": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "workerEpoch": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "workerHeadCheckedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "pendingRoomCount": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "blockedCode": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "lastSuccessfulAppendAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "dependencyStatus": {
+                      "type": "object",
+                      "properties": {
+                        "mongo": {
+                          "enum": [
+                            "available",
+                            "unavailable"
+                          ]
+                        },
+                        "realtime": {
+                          "enum": [
+                            "available",
+                            "unavailable"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "mongo",
+                        "realtime"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "userId",
+                    "deviceId",
+                    "workerHead",
+                    "workerEpoch",
+                    "workerHeadCheckedAt",
+                    "pendingRoomCount",
+                    "blockedCode",
+                    "lastSuccessfulAppendAt",
+                    "dependencyStatus"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "servers": [
+        {
+          "url": "https://{worker}.{accountSubdomain}.workers.dev",
+          "variables": {
+            "worker": {
+              "default": "chat-poc-realtime-development"
+            },
+            "accountSubdomain": {
+              "default": "replace-with-actual-deployment"
+            }
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getWorkerHealth",
+        "summary": "get Worker Health",
+        "description": "",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/users/{userId}/events": {
+      "servers": [
+        {
+          "url": "https://{worker}.{accountSubdomain}.workers.dev",
+          "variables": {
+            "worker": {
+              "default": "chat-poc-realtime-development"
+            },
+            "accountSubdomain": {
+              "default": "replace-with-actual-deployment"
+            }
+          }
+        }
+      ],
+      "post": {
+        "operationId": "upsertUserRoom",
+        "summary": "Upsert current user room projection",
+        "description": "Internal authenticated current-state publication. No message event history. A higher per-room revision replaces the prior room snapshot and allocates a Cloudflare cursor. Same content/revision retries are idempotent; lower revisions do not roll state back. Legacy path retained.",
+        "security": [
+          {
+            "internal": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Dataset-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2",
+                "3"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "enum": [
+                        "1",
+                        "2",
+                        "3"
+                      ]
+                    },
+                    "acceptedSeq": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "headSeq": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    },
+                    "epoch": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "userId",
+                    "acceptedSeq",
+                    "headSeq",
+                    "duplicate",
+                    "epoch"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/users/{userId}/stream": {
+      "servers": [
+        {
+          "url": "https://{worker}.{accountSubdomain}.workers.dev",
+          "variables": {
+            "worker": {
+              "default": "chat-poc-realtime-development"
+            },
+            "accountSubdomain": {
+              "default": "replace-with-actual-deployment"
+            }
+          }
+        }
+      ],
+      "get": {
+        "operationId": "inspectStream",
+        "summary": "inspect Stream",
+        "description": "Prunes expired room payloads and returns the epoch, high-water cursor and replay floor. eventCount counts retained room snapshots, not historical messages.",
+        "security": [
+          {
+            "internal": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Dataset-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2",
+                "3"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "userId": {
+                      "type": "string",
+                      "enum": [
+                        "1",
+                        "2",
+                        "3"
+                      ]
+                    },
+                    "headSeq": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "retainedFromSeq": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "eventCount": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "epoch": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "replayFloor": {
+                      "type": "integer",
+                      "format": "int64",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "retentionMs": {
+                      "const": 172800000
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "userId",
+                    "headSeq",
+                    "retainedFromSeq",
+                    "eventCount",
+                    "epoch",
+                    "replayFloor",
+                    "retentionMs"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/presence/query": {
+      "servers": [
+        {
+          "url": "https://{worker}.{accountSubdomain}.workers.dev",
+          "variables": {
+            "worker": {
+              "default": "chat-poc-realtime-development"
+            },
+            "accountSubdomain": {
+              "default": "replace-with-actual-deployment"
+            }
+          }
+        }
+      ],
+      "post": {
+        "operationId": "inspectPresence",
+        "summary": "inspect Presence",
+        "description": "",
+        "security": [
+          {
+            "internal": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Dataset-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "1",
+                        "2",
+                        "3"
+                      ]
+                    },
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "userIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Presence"
+                      }
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/ws": {
+      "servers": [
+        {
+          "url": "https://{worker}.{accountSubdomain}.workers.dev",
+          "variables": {
+            "worker": {
+              "default": "chat-poc-realtime-development"
+            },
+            "accountSubdomain": {
+              "default": "replace-with-actual-deployment"
+            }
+          }
+        }
+      ],
+      "get": {
+        "operationId": "upgradeWebSocket",
+        "summary": "Ticket-authorized WebSocket upgrade",
+        "description": "Frame protocol is normative in cloudflare/WEBSOCKET_PROTOCOL.md; no message writes are accepted over sockets.",
+        "security": [
+          {
+            "ticket": []
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "Switching protocols; hello then resume required."
+          },
+          "401": {
+            "description": "Invalid upgrade ticket"
+          },
+          "503": {
+            "description": "Worker unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/{roomId}/read": {
+      "post": {
+        "operationId": "advanceRoomReadCursor",
+        "summary": "Advance this account room read cursor",
+        "description": "Marks only messages through the displayed canonical roomSeq as read. Monotonic, idempotent across devices, rejects values beyond room head, preserves concurrent later unread messages and activity sorting; no peer read receipt.",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "roomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "throughRoomSeq": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "throughRoomSeq"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "datasetId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "room": {
+                      "$ref": "#/components/schemas/Room"
+                    }
+                  },
+                  "required": [
+                    "datasetId",
+                    "room"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Canonical error; see contracts/DEFAULTS_AND_ERRORS.md.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "internal": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "ticket": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "ticket",
+        "description": "60-second upgrade ticket; redact in logs."
+      }
+    },
+    "schemas": {
+      "UserSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roomId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderId": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "originDeviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientMessageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roomSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "type": {
+            "const": "text"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]",
+            "description": "Nonblank; at most 2000 Unicode scalar values and 8192 decoded UTF-8 bytes; content preserved exactly. Whitespace is U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000–U+200A, U+2028, U+2029, U+202F, U+205F, U+3000 and U+FEFF."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "roomId",
+          "senderId",
+          "originDeviceId",
+          "clientMessageId",
+          "roomSeq",
+          "type",
+          "text",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "LastMessage": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "senderId": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "[^\\u0009-\\u000D\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF]",
+            "description": "Nonblank; at most 2000 Unicode scalar values and 8192 decoded UTF-8 bytes; content preserved exactly. Whitespace is U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000–U+200A, U+2028, U+2029, U+202F, U+205F, U+3000 and U+FEFF."
+          },
+          "roomSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "messageId",
+          "senderId",
+          "text",
+          "roomSeq",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "Room": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "enum": [
+              "direct",
+              "group"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80,
+            "description": "Group titles are already trimmed with the canonical whitespace class; direct-room title is null. Whitespace is U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000–U+200A, U+2028, U+2029, U+202F, U+205F, U+3000 and U+FEFF."
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2",
+                "3"
+              ]
+            },
+            "minItems": 2,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "createdBy": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "lastMessageSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "lastMessage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LastMessage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "unreadCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "lastReadSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "memberIds",
+          "createdBy",
+          "createdAt",
+          "updatedAt",
+          "version",
+          "lastMessageSeq",
+          "lastMessage",
+          "revision",
+          "unreadCount",
+          "lastReadSeq"
+        ],
+        "additionalProperties": false
+      },
+      "Presence": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "state": {
+            "enum": [
+              "online",
+              "offline",
+              "unknown"
+            ]
+          },
+          "activeDeviceCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "connectionCount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "revision": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "observedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "userId",
+          "state",
+          "activeDeviceCount",
+          "connectionCount",
+          "revision",
+          "observedAt"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "details": {
+                "type": "object",
+                "properties": {
+                  "expectedSeq": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "expectedSeq"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable"
+            ],
+            "additionalProperties": false
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "error",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "EventEnvelope": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 2
+          },
+          "datasetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "type": {
+            "const": "room.upserted"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "room": {
+                "$ref": "#/components/schemas/Room"
+              }
+            },
+            "required": [
+              "room"
+            ],
+            "additionalProperties": false
+          },
+          "streamSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "v",
+          "datasetId",
+          "userId",
+          "type",
+          "data",
+          "streamSeq"
+        ],
+        "additionalProperties": false
+      },
+      "SyncCursor": {
+        "type": "object",
+        "properties": {
+          "epoch": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "throughSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "syncedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "epoch",
+          "throughSeq",
+          "syncedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RoomsPage": {
+        "type": "object",
+        "properties": {
+          "datasetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Room"
+            },
+            "maxItems": 100
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sync": {
+            "$ref": "#/components/schemas/SyncCursor"
+          }
+        },
+        "required": [
+          "datasetId",
+          "rooms",
+          "nextCursor",
+          "sync"
+        ],
+        "additionalProperties": false
+      },
+      "RoomUpdate": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 2
+          },
+          "datasetId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "type": {
+            "const": "room.upserted"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "room": {
+                "$ref": "#/components/schemas/Room"
+              }
+            },
+            "required": [
+              "room"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "v",
+          "datasetId",
+          "userId",
+          "type",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "EventBatch": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "const": 2
+          },
+          "type": {
+            "const": "events.batch"
+          },
+          "epoch": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "batchId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fromSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "toSeq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "events": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/EventEnvelope"
+            }
+          }
+        },
+        "required": [
+          "v",
+          "type",
+          "epoch",
+          "batchId",
+          "fromSeq",
+          "toSeq",
+          "events"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "v": 2,
+  "datasetId": "90000000-0000-4000-8000-000000000001",
+  "userId": "2",
+  "streamSeq": 3,
+  "type": "room.upserted",
+  "data": {
+    "room": {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "type": "group",
+      "title": "Demo group",
+      "memberIds": [
+        "1",
+        "2",
+        "3"
+      ],
+      "createdBy": "1",
+      "createdAt": "2026-10-15T00:00:00.000Z",
+      "updatedAt": "2026-10-15T00:00:00.000Z",
+      "version": 1,
+      "lastMessageSeq": 0,
+      "lastMessage": null,
+      "revision": 1,
+      "unreadCount": 0,
+      "lastReadSeq": 0
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "v": 2,
+  "type": "events.batch",
+  "batchId": "80000000-0000-4000-8000-000000000003",
+  "fromSeq": 6,
+  "toSeq": 6,
+  "events": [
+    {
+      "v": 2,
+      "datasetId": "90000000-0000-4000-8000-000000000001",
+      "userId": "2",
+      "streamSeq": 6,
+      "type": "room.upserted",
+      "data": {
+        "room": {
+          "id": "20000000-0000-4000-8000-000000000002",
+          "type": "group",
+          "title": "Demo group",
+          "memberIds": [
+            "1",
+            "2",
+            "3"
+          ],
+          "createdBy": "1",
+          "createdAt": "2026-10-15T00:00:00.000Z",
+          "updatedAt": "2026-10-15T00:00:00.000Z",
+          "version": 4,
+          "lastMessageSeq": 3,
+          "lastMessage": {
+            "messageId": "30000000-0000-4000-8000-000000000004",
+            "senderId": "1",
+            "text": "Third group message",
+            "roomSeq": 3,
+            "createdAt": "2026-10-15T00:00:00.000Z"
+          },
+          "revision": 4,
+          "unreadCount": 1,
+          "lastReadSeq": 0
+        }
+      }
+    }
+  ],
+  "epoch": "91000000-0000-4000-8000-000000000001"
+}
